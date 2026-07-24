@@ -1,0 +1,7 @@
+{
+  "boards": [
+    { "id": "personal", "name": "Personal", "color": "#22c55e", "icon": "🏠", "file": "data/boards/personal.json" },
+    { "id": "airbnb", "name": "Airbnb", "color": "#f59e0b", "icon": "🏡", "file": "data/boards/airbnb.json" },
+    { "id": "work", "name": "Work", "color": "#6366f1", "icon": "💼", "file": "data/boards/work.json", "local": true }
+  ]
+}

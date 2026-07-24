@@ -1,0 +1,8 @@
+{
+  "categories": [
+    { "id": "listing", "name": "Listing Management", "color": "#f59e0b" },
+    { "id": "guests", "name": "Guest Communication", "color": "#3987e5" },
+    { "id": "finance", "name": "Finance & Taxes", "color": "#03a14a" }
+  ],
+  "links": []
+}
