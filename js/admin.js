@@ -5,6 +5,7 @@ const PALETTE = [
 ];
 
 const CONFIG_KEY = "launchpad-admin-config";
+const DATA_PATH = "data/links.json";
 
 const statusBanner = document.getElementById("statusBanner");
 const settingsBtn = document.getElementById("settingsBtn");
@@ -12,18 +13,7 @@ const settingsPanel = document.getElementById("settingsPanel");
 const settingsForm = document.getElementById("settingsForm");
 const testConnBtn = document.getElementById("testConnBtn");
 const previewLink = document.getElementById("previewLink");
-const adminTitle = document.getElementById("adminTitle");
 
-const boardsView = document.getElementById("boardsView");
-const boardList = document.getElementById("boardList");
-const addBoardForm = document.getElementById("addBoardForm");
-const addBoardColorPicker = document.getElementById("addBoardColorPicker");
-
-const editView = document.getElementById("editView");
-const editBoardDot = document.getElementById("editBoardDot");
-const editBoardName = document.getElementById("editBoardName");
-const localNotice = document.getElementById("localNotice");
-const localFilePath = document.getElementById("localFilePath");
 const editForms = document.getElementById("editForms");
 const categoryList = document.getElementById("categoryList");
 const addCategoryForm = document.getElementById("addCategoryForm");
@@ -45,30 +35,30 @@ const linkCategorySelect = document.getElementById("linkCategorySelect");
 const linkColorPicker = document.getElementById("linkColorPicker");
 const deleteLinkBtn = document.getElementById("deleteLinkBtn");
 
-let BOARD_ID = "";
-let boardsRegistry = [];
-let boardsRegistrySha = null;
-let deletedBoardIds = [];
+let linkData = null; // { categories, links }
+let linkDataSha = null;
 
-let currentBoard = null; // registry entry, when editing a board
-let currentBoardData = null; // { categories, links }
-let currentBoardSha = null;
-
-let editingLinkIndex = null; // index into currentBoardData.links, or null when adding
+let editingLinkIndex = null; // index into linkData.links, or null when adding
 let modalSubLinks = [];
 
 init();
 
 async function init() {
-  BOARD_ID = new URLSearchParams(location.search).get("id") || "";
   wireGlobalUi();
-  await loadRegistry();
+  previewLink.href = "index.html";
 
-  if (BOARD_ID) {
-    enterEditView();
-  } else {
-    enterBoardsView();
+  try {
+    const { sha, json } = await ghGetFile(DATA_PATH);
+    linkDataSha = sha;
+    linkData = json || { categories: [], links: [] };
+  } catch (e) {
+    editForms.hidden = true;
+    showStatus(e.message, "error");
+    return;
   }
+
+  renderCategoryList();
+  renderLinkList();
 }
 
 // --- GitHub API -------------------------------------------------------------
@@ -141,16 +131,6 @@ async function ghPutFile(path, value, sha, message) {
   return res.json();
 }
 
-async function ghDeleteFile(path, sha, message) {
-  const { owner, repo, branch } = getConfig();
-  const res = await ghRequest(`repos/${owner}/${repo}/contents/${path}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, sha, branch: branch || "main" }),
-  });
-  return res.ok;
-}
-
 async function ghTestConnection() {
   const { owner, repo, token } = getConfig();
   if (!owner || !repo || !token) throw new Error("Fill in owner, repo, and token first.");
@@ -205,10 +185,20 @@ function wireGlobalUi() {
     }
   });
 
-  buildColorPicker(addBoardColorPicker, addBoardForm.color, "#6366f1");
-  addBoardForm.addEventListener("submit", onAddBoard);
-
   buildColorPicker(addCategoryColorPicker, addCategoryForm.color, "#6366f1");
+  addCategoryForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = addCategoryForm.name.value.trim();
+    if (!name) return;
+    const id = slugify(name);
+    linkData.categories.push({ id, name, color: addCategoryForm.color.value || "#6366f1" });
+    addCategoryForm.reset();
+    buildColorPicker(addCategoryColorPicker, addCategoryForm.color, "#6366f1");
+    renderCategoryList();
+  });
+
+  addLinkBtn.addEventListener("click", () => openLinkModal(null, null));
+  saveBoardBtn.addEventListener("click", onSaveData);
 
   linkModalClose.addEventListener("click", closeLinkModal);
   linkModalOverlay.addEventListener("click", (e) => {
@@ -286,201 +276,14 @@ function slugify(name) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  return base || `board-${Date.now()}`;
+  return base || `item-${Date.now()}`;
 }
 
-// --- Boards (manage) view -------------------------------------------------
-
-async function loadRegistry() {
-  try {
-    const res = await fetch("data/boards.json", { cache: "no-store" });
-    const data = await res.json();
-    boardsRegistry = data.boards || [];
-  } catch {
-    boardsRegistry = [];
-  }
-}
-
-function enterBoardsView() {
-  adminTitle.textContent = "Manage Launchpads";
-  previewLink.hidden = true;
-  boardsView.hidden = false;
-  editView.hidden = true;
-  renderBoardsList();
-}
-
-function renderBoardsList() {
-  boardList.innerHTML = "";
-
-  for (const board of boardsRegistry) {
-    const row = document.createElement("div");
-    row.className = "admin-list-row";
-    row.innerHTML = `
-      <input type="text" class="row-icon-input" value="${escapeAttr(board.icon || "")}" maxlength="4" title="Icon" />
-      <input type="text" class="row-name-input" value="${escapeAttr(board.name || "")}" title="Name" />
-      <div class="color-picker row-color-picker"></div>
-      ${board.local ? `<span class="admin-row-badge" title="This board's data stays on this device only">local</span>` : ""}
-      <a class="row-link" href="admin.html?id=${encodeURIComponent(board.id)}">Edit links →</a>
-      <button type="button" class="row-delete" title="Delete this launchpad">✕</button>
-    `;
-
-    const iconInput = row.querySelector(".row-icon-input");
-    const nameInput = row.querySelector(".row-name-input");
-    const colorPicker = row.querySelector(".row-color-picker");
-    const colorHiddenInput = document.createElement("input");
-    colorHiddenInput.type = "hidden";
-    row.appendChild(colorHiddenInput);
-    buildColorPicker(colorPicker, colorHiddenInput, board.color || "#6366f1");
-
-    iconInput.addEventListener("change", () => (board.icon = iconInput.value.trim()));
-    nameInput.addEventListener("change", () => (board.name = nameInput.value.trim()));
-    colorHiddenInput.addEventListener("input", () => (board.color = colorHiddenInput.value || "#6366f1"));
-
-    row.querySelector(".row-delete").addEventListener("click", () => {
-      if (!confirm(`Delete "${board.name}"? This removes it from the list (and its data file, once you save).`)) return;
-      boardsRegistry = boardsRegistry.filter((b) => b.id !== board.id);
-      if (!board._isNew) deletedBoardIds.push(board.id);
-      renderBoardsList();
-    });
-
-    boardList.appendChild(row);
-  }
-
-  const saveBar = document.createElement("div");
-  saveBar.className = "admin-save-bar";
-  saveBar.innerHTML = `<button type="button" class="btn-primary" id="saveRegistryBtn">Save changes to GitHub</button>
-    <span class="admin-save-status" id="registrySaveStatus"></span>`;
-  boardList.appendChild(saveBar);
-  document.getElementById("saveRegistryBtn").addEventListener("click", onSaveRegistry);
-}
-
-async function onAddBoard(e) {
-  e.preventDefault();
-  const name = addBoardForm.name.value.trim();
-  if (!name) return;
-  const id = slugify(name);
-  if (boardsRegistry.some((b) => b.id === id)) {
-    showStatus("A board with that name already exists.", "error");
-    return;
-  }
-
-  boardsRegistry.push({
-    id,
-    name,
-    color: addBoardForm.color.value || "#6366f1",
-    icon: addBoardForm.icon.value.trim() || "🚀",
-    file: `data/boards/${id}.json`,
-    _isNew: true,
-  });
-
-  addBoardForm.reset();
-  buildColorPicker(addBoardColorPicker, addBoardForm.color, "#6366f1");
-  renderBoardsList();
-}
-
-async function onSaveRegistry() {
-  const btn = document.getElementById("saveRegistryBtn");
-  const status = document.getElementById("registrySaveStatus");
-  btn.disabled = true;
-  status.textContent = "Saving…";
-  status.className = "admin-save-status";
-
-  try {
-    for (const board of boardsRegistry) {
-      if (board._isNew) {
-        await ghPutFile(board.file, { categories: [], links: [] }, null, `Add ${board.name} launchpad`);
-        delete board._isNew;
-      }
-    }
-
-    for (const id of deletedBoardIds) {
-      const removed = { file: `data/boards/${id}.json` };
-      try {
-        const existing = await ghGetFile(removed.file);
-        if (existing.sha) await ghDeleteFile(removed.file, existing.sha, `Remove board ${id}`);
-      } catch {
-        // best-effort — registry update below still proceeds
-      }
-    }
-    deletedBoardIds = [];
-
-    const clean = boardsRegistry.map(({ _isNew, ...rest }) => rest);
-    const { sha } = await ghGetFile("data/boards.json");
-    await ghPutFile("data/boards.json", { boards: clean }, sha, "Update launchpad registry");
-
-    status.textContent = "Saved ✓";
-    showStatus("Launchpad list saved to GitHub.", "ok");
-  } catch (e) {
-    status.textContent = "";
-    showStatus(e.message, "error");
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-// --- Edit board view ------------------------------------------------------
-
-async function enterEditView() {
-  currentBoard = boardsRegistry.find((b) => b.id === BOARD_ID);
-  if (!currentBoard) {
-    boardsView.hidden = false;
-    editView.hidden = true;
-    showStatus(`No launchpad named "${BOARD_ID}".`, "error");
-    return;
-  }
-
-  adminTitle.textContent = "Manage Launchpads";
-  boardsView.hidden = true;
-  editView.hidden = false;
-  editBoardDot.style.background = currentBoard.color || "#6366f1";
-  editBoardName.textContent = currentBoard.name;
-  previewLink.hidden = false;
-  previewLink.href = `board.html?id=${encodeURIComponent(currentBoard.id)}`;
-
-  if (currentBoard.local) {
-    localNotice.hidden = false;
-    localFilePath.textContent = currentBoard.file;
-    editForms.hidden = true;
-    return;
-  }
-
-  localNotice.hidden = true;
-  editForms.hidden = false;
-
-  try {
-    const { sha, json } = await ghGetFile(currentBoard.file);
-    currentBoardSha = sha;
-    currentBoardData = json || { categories: [], links: [] };
-  } catch (e) {
-    editForms.hidden = true;
-    showStatus(e.message, "error");
-    return;
-  }
-
-  renderCategoryList();
-  renderLinkList();
-  wireEditView();
-}
-
-function wireEditView() {
-  addCategoryForm.onsubmit = (e) => {
-    e.preventDefault();
-    const name = addCategoryForm.name.value.trim();
-    if (!name) return;
-    const id = slugify(name);
-    currentBoardData.categories.push({ id, name, color: addCategoryForm.color.value || "#6366f1" });
-    addCategoryForm.reset();
-    buildColorPicker(addCategoryColorPicker, addCategoryForm.color, "#6366f1");
-    renderCategoryList();
-  };
-
-  addLinkBtn.onclick = () => openLinkModal(null, null);
-  saveBoardBtn.onclick = onSaveBoard;
-}
+// --- Categories -------------------------------------------------------------
 
 function renderCategoryList() {
   categoryList.innerHTML = "";
-  for (const cat of currentBoardData.categories) {
+  for (const cat of linkData.categories) {
     const row = document.createElement("div");
     row.className = "admin-list-row";
     row.innerHTML = `
@@ -501,7 +304,7 @@ function renderCategoryList() {
 
     row.querySelector(".row-delete").addEventListener("click", () => {
       if (!confirm(`Delete category "${cat.name}"? Links in it will move to the first remaining category.`)) return;
-      currentBoardData.categories = currentBoardData.categories.filter((c) => c.id !== cat.id);
+      linkData.categories = linkData.categories.filter((c) => c.id !== cat.id);
       renderCategoryList();
       renderLinkList();
     });
@@ -510,11 +313,13 @@ function renderCategoryList() {
   }
 }
 
+// --- Links -------------------------------------------------------------
+
 function renderLinkList() {
   linkList.innerHTML = "";
-  currentBoardData.links.forEach((link, index) => {
+  linkData.links.forEach((link, index) => {
     const isGroup = Array.isArray(link.links) && link.links.length > 0;
-    const cat = currentBoardData.categories.find((c) => c.id === link.category);
+    const cat = linkData.categories.find((c) => c.id === link.category);
     const row = document.createElement("div");
     row.className = "admin-list-row admin-list-row-link";
     row.innerHTML = `
@@ -531,7 +336,7 @@ function renderLinkList() {
     row.querySelector(".row-delete").addEventListener("click", (e) => {
       e.stopPropagation();
       if (!confirm(`Delete "${link.name}"?`)) return;
-      currentBoardData.links.splice(index, 1);
+      linkData.links.splice(index, 1);
       renderLinkList();
     });
     linkList.appendChild(row);
@@ -559,10 +364,10 @@ function openLinkModal(link, index) {
   modalSubLinks = isGroup ? link.links.map((s) => ({ ...s })) : [];
   renderSubLinkRows();
 
-  linkCategorySelect.innerHTML = currentBoardData.categories
+  linkCategorySelect.innerHTML = linkData.categories
     .map((c) => `<option value="${escapeAttr(c.id)}">${escapeHtml(c.name)}</option>`)
     .join("");
-  linkCategorySelect.value = link?.category || currentBoardData.categories[0]?.id || "";
+  linkCategorySelect.value = link?.category || linkData.categories[0]?.id || "";
 
   highlightSwatch(linkColorPicker, link?.color || "");
 
@@ -602,7 +407,7 @@ function onSaveLink(e) {
   if (!name) return;
 
   const link = {
-    id: editingLinkIndex !== null ? currentBoardData.links[editingLinkIndex].id : slugify(name) + "-" + Date.now().toString(36),
+    id: editingLinkIndex !== null ? linkData.links[editingLinkIndex].id : slugify(name) + "-" + Date.now().toString(36),
     name,
     category: linkCategorySelect.value,
   };
@@ -622,9 +427,9 @@ function onSaveLink(e) {
   if (linkForm.order.value !== "") link.order = Number(linkForm.order.value);
 
   if (editingLinkIndex !== null) {
-    currentBoardData.links[editingLinkIndex] = link;
+    linkData.links[editingLinkIndex] = link;
   } else {
-    currentBoardData.links.push(link);
+    linkData.links.push(link);
   }
 
   closeLinkModal();
@@ -633,23 +438,23 @@ function onSaveLink(e) {
 
 function onDeleteLink() {
   if (editingLinkIndex === null) return;
-  const link = currentBoardData.links[editingLinkIndex];
+  const link = linkData.links[editingLinkIndex];
   if (!confirm(`Delete "${link.name}"?`)) return;
-  currentBoardData.links.splice(editingLinkIndex, 1);
+  linkData.links.splice(editingLinkIndex, 1);
   closeLinkModal();
   renderLinkList();
 }
 
-async function onSaveBoard() {
+async function onSaveData() {
   saveBoardBtn.disabled = true;
   saveStatus.textContent = "Saving…";
   saveStatus.className = "admin-save-status";
   try {
-    const { sha } = await ghGetFile(currentBoard.file);
-    const result = await ghPutFile(currentBoard.file, currentBoardData, sha, `Update ${currentBoard.name} via LaunchPad admin`);
-    currentBoardSha = result.content?.sha || currentBoardSha;
+    const { sha } = await ghGetFile(DATA_PATH);
+    const result = await ghPutFile(DATA_PATH, linkData, sha, "Update links via LaunchPad admin");
+    linkDataSha = result.content?.sha || linkDataSha;
     saveStatus.textContent = "Saved ✓";
-    showStatus(`${currentBoard.name} saved to GitHub.`, "ok");
+    showStatus("Saved to GitHub.", "ok");
   } catch (e) {
     saveStatus.textContent = "";
     showStatus(e.message, "error");

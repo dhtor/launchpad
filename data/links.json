@@ -3,7 +3,10 @@
     { "id": "work", "name": "Work Tools", "color": "#6366f1" },
     { "id": "docs", "name": "Docs & Files", "color": "#22c55e" },
     { "id": "comms", "name": "Communication", "color": "#f59e0b" },
-    { "id": "dashboards", "name": "Dashboards", "color": "#ec4899" }
+    { "id": "dashboards", "name": "Dashboards", "color": "#ec4899" },
+    { "id": "listing", "name": "Listing Management", "color": "#f59e0b" },
+    { "id": "guests", "name": "Guest Communication", "color": "#3987e5" },
+    { "id": "finance", "name": "Finance & Taxes", "color": "#03a14a" }
   ],
   "links": [
     { "id": "gmail", "name": "Gmail", "url": "https://mail.google.com", "category": "comms" },

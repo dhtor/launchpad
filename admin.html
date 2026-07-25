@@ -4,23 +4,23 @@
   <script src="js/theme.js?v=1"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Manage — LaunchPad</title>
+  <title>Manage Links — LaunchPad</title>
   <link rel="icon" href="logo.png" />
-  <link rel="stylesheet" href="css/style.css?v=11" />
+  <link rel="stylesheet" href="css/style.css?v=12" />
 </head>
 <body>
   <div class="page admin-page">
     <header class="top-bar">
       <div class="brand">
-        <a class="back-link" href="index.html" title="All launchpads">
+        <a class="back-link" href="index.html" title="Back to LaunchPad">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 4l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </a>
         <img class="brand-logo" src="logo.png" alt="LaunchPad logo" />
-        <h1 id="adminTitle">Manage Launchpads</h1>
+        <h1>Manage Links</h1>
       </div>
-      <a class="icon-btn" id="previewLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Preview</a>
+      <a class="icon-btn" id="previewLink" href="index.html" target="_blank" rel="noopener noreferrer">Preview</a>
       <button class="icon-btn" id="settingsBtn" type="button">⚙ GitHub settings</button>
       <button class="icon-btn theme-toggle" id="themeToggle" type="button" title="Toggle theme">
         <svg class="icon-sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -63,37 +63,7 @@
       </form>
     </section>
 
-    <section id="boardsView" class="admin-panel">
-      <h2>Your launchpads</h2>
-      <div id="boardList" class="admin-list"></div>
-
-      <h2>Add a launchpad</h2>
-      <form id="addBoardForm" class="admin-form">
-        <label>Name
-          <input name="name" placeholder="e.g. Side Project" required autocomplete="off" />
-        </label>
-        <label>Icon (emoji)
-          <input name="icon" placeholder="🚀" maxlength="4" autocomplete="off" />
-        </label>
-        <label>Color
-          <div class="color-picker" id="addBoardColorPicker"></div>
-          <input name="color" type="text" placeholder="#6366f1" autocomplete="off" />
-        </label>
-        <button type="submit" class="btn-primary">Create launchpad</button>
-      </form>
-    </section>
-
-    <section id="editView" class="admin-panel" hidden>
-      <div class="admin-board-head">
-        <span class="admin-board-dot" id="editBoardDot"></span>
-        <h2 id="editBoardName"></h2>
-      </div>
-
-      <p id="localNotice" class="admin-hint" hidden>
-        This board's data stays on this device only — hand-edit <code id="localFilePath"></code> directly.
-        GitHub-based saving isn't available for local boards.
-      </p>
-
+    <section id="editView" class="admin-panel">
       <div id="editForms">
         <h3>Categories</h3>
         <div id="categoryList" class="admin-list"></div>
@@ -177,6 +147,6 @@
     </div>
   </div>
 
-  <script src="js/admin.js?v=2"></script>
+  <script src="js/admin.js?v=3"></script>
 </body>
 </html>

@@ -1,19 +1,18 @@
-const BOARDS_URL = "data/boards.json";
+const DATA_URL = "data/links.json";
+const LAYOUT_KEY = "launchpad-layout-v1";
+const WIDGET_ORDER_KEY = "launchpad-widget-order-v1";
 
 const grid = document.getElementById("categories");
 const searchInput = document.getElementById("search");
 const resetBtn = document.getElementById("reset-layout");
 const clockEl = document.getElementById("clock");
-const boardTitleEl = document.getElementById("boardTitle");
-const boardFilePathEl = document.getElementById("boardFilePath");
-const editBoardLink = document.getElementById("edit-board");
+const editLink = document.getElementById("edit-link");
 const modalOverlay = document.getElementById("modalOverlay");
 const modalCard = document.getElementById("modalCard");
 const modalTitle = document.getElementById("modalTitle");
 const modalLinks = document.getElementById("modalLinks");
 const modalClose = document.getElementById("modalClose");
 
-let BOARD_ID = "";
 let categories = [];
 let links = [];
 let linkById = new Map();
@@ -21,33 +20,8 @@ let linkById = new Map();
 init();
 
 async function init() {
-  BOARD_ID = new URLSearchParams(location.search).get("id") || "";
-
-  const boardsRes = await fetch(BOARDS_URL, { cache: "no-store" });
-  const boardsData = await boardsRes.json();
-  const board = (boardsData.boards || []).find((b) => b.id === BOARD_ID);
-
-  if (!board) {
-    location.href = "index.html";
-    return;
-  }
-
-  document.title = `${board.name} — LaunchPad`;
-  boardTitleEl.textContent = board.name;
-  editBoardLink.href = `admin.html?id=${encodeURIComponent(BOARD_ID)}`;
-  if (boardFilePathEl) boardFilePathEl.textContent = board.file;
-
-  let data;
-  try {
-    const res = await fetch(board.file, { cache: "no-store" });
-    if (!res.ok) throw new Error(String(res.status));
-    data = await res.json();
-  } catch {
-    grid.innerHTML = `<p class="empty-state">This board's data isn't available in this deployment
-      (it may be local-only, like the Work board). Open it from the device that has
-      <code>${escapeHtml(board.file)}</code>.</p>`;
-    return;
-  }
+  const res = await fetch(DATA_URL, { cache: "no-store" });
+  const data = await res.json();
   categories = data.categories || [];
   links = data.links || [];
   linkById = new Map(links.map((l) => [l.id, l]));
@@ -57,21 +31,13 @@ async function init() {
 
   searchInput.addEventListener("input", () => filterTiles(searchInput.value.trim().toLowerCase()));
   resetBtn.addEventListener("click", () => {
-    localStorage.removeItem(layoutKey());
-    localStorage.removeItem(widgetOrderKey());
+    localStorage.removeItem(LAYOUT_KEY);
+    localStorage.removeItem(WIDGET_ORDER_KEY);
     render();
   });
 
   enableWidgetDropZone();
   enableModal();
-}
-
-function layoutKey() {
-  return `launchpad-layout-v1:${BOARD_ID}`;
-}
-
-function widgetOrderKey() {
-  return `launchpad-widget-order-v1:${BOARD_ID}`;
 }
 
 // --- Group link modal -----------------------------------------------------
@@ -132,14 +98,14 @@ function startClock() {
 
 function loadOverride() {
   try {
-    return JSON.parse(localStorage.getItem(layoutKey())) || {};
+    return JSON.parse(localStorage.getItem(LAYOUT_KEY)) || {};
   } catch {
     return {};
   }
 }
 
 function saveOverride(override) {
-  localStorage.setItem(layoutKey(), JSON.stringify(override));
+  localStorage.setItem(LAYOUT_KEY, JSON.stringify(override));
 }
 
 function buildCategoryOrder() {
@@ -184,7 +150,7 @@ function persistOrderFromDOM() {
 function buildWidgetOrder() {
   let order;
   try {
-    order = JSON.parse(localStorage.getItem(widgetOrderKey())) || [];
+    order = JSON.parse(localStorage.getItem(WIDGET_ORDER_KEY)) || [];
   } catch {
     order = [];
   }
@@ -209,7 +175,7 @@ function buildWidgetOrder() {
 
 function persistWidgetOrderFromDOM() {
   const order = Array.from(grid.querySelectorAll(".widget")).map((w) => w.dataset.categoryId);
-  localStorage.setItem(widgetOrderKey(), JSON.stringify(order));
+  localStorage.setItem(WIDGET_ORDER_KEY, JSON.stringify(order));
 }
 
 // --- Rendering ----------------------------------------------------------
