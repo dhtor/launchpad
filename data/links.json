@@ -80,6 +80,13 @@
       "name": "Monday",
       "category": "work",
       "url": "https://altusretreats.monday.com/boards/18423728460/pulses/12626865535"
+    },
+    {
+      "id": "altus-gmail-ms0yenyw",
+      "name": "Altus Gmail",
+      "category": "work",
+      "url": "https://mail.google.com/mail/?authuser=0",
+      "color": "var(--pal-rose)"
     }
   ]
 }
