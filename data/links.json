@@ -1,34 +1,85 @@
 {
   "categories": [
-    { "id": "work", "name": "Work Tools", "color": "#6366f1" },
-    { "id": "docs", "name": "Docs & Files", "color": "#22c55e" },
-    { "id": "comms", "name": "Communication", "color": "#f59e0b" },
-    { "id": "dashboards", "name": "Dashboards", "color": "#ec4899" },
-    { "id": "listing", "name": "Listing Management", "color": "#f59e0b" },
-    { "id": "guests", "name": "Guest Communication", "color": "#3987e5" },
-    { "id": "finance", "name": "Finance & Taxes", "color": "#03a14a" }
+    {
+      "id": "work",
+      "name": "Business Tools",
+      "color": "#6366f1"
+    },
+    {
+      "id": "docs",
+      "name": "Docs & Files",
+      "color": "#22c55e"
+    },
+    {
+      "id": "comms",
+      "name": "Communication",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "dashboards",
+      "name": "Dashboards",
+      "color": "#ec4899"
+    },
+    {
+      "id": "listing",
+      "name": "Listing Management",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "guests",
+      "name": "Guest Communication",
+      "color": "#3987e5"
+    },
+    {
+      "id": "finance",
+      "name": "Finance & Taxes",
+      "color": "#03a14a"
+    }
   ],
   "links": [
-    { "id": "gmail", "name": "Gmail", "url": "https://mail.google.com", "category": "comms" },
-    { "id": "calendar", "name": "Calendar", "url": "https://calendar.google.com", "category": "comms" },
-    { "id": "slack", "name": "Slack", "url": "https://slack.com", "category": "comms" },
-    { "id": "drive", "name": "Google Drive", "url": "https://drive.google.com", "category": "docs", "wide": true },
-    { "id": "notion", "name": "Notion", "url": "https://notion.so", "category": "docs" },
-    { "id": "github", "name": "GitHub", "url": "https://github.com", "category": "work" },
-    { "id": "jira", "name": "Jira", "url": "https://www.atlassian.com/software/jira", "category": "work", "color": "#3b82f6" },
-    { "id": "figma", "name": "Figma", "url": "https://figma.com", "category": "work", "color": "var(--pal-violet)" },
-    { "id": "grafana", "name": "Grafana", "url": "https://grafana.com", "category": "dashboards", "color": "var(--pal-amber)" },
     {
-      "id": "aureus",
-      "name": "AUREUS",
+      "id": "gmail",
+      "name": "Gmail",
+      "url": "https://mail.google.com",
+      "category": "comms"
+    },
+    {
+      "id": "calendar",
+      "name": "Calendar",
+      "url": "https://calendar.google.com",
+      "category": "comms"
+    },
+    {
+      "id": "slack",
+      "name": "Slack",
+      "url": "https://slack.com",
+      "category": "comms"
+    },
+    {
+      "id": "drive",
+      "name": "Google Drive",
+      "url": "https://drive.google.com",
+      "category": "docs",
+      "wide": true
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "url": "https://notion.so",
+      "category": "docs"
+    },
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "url": "https://grafana.com",
+      "category": "dashboards",
+      "color": "var(--pal-amber)"
+    },
+    {
+      "id": "monday-ms0lrd5f",
+      "name": "Monday",
       "category": "work",
-      "icon": "A",
-      "color": "#f43f5e",
-      "links": [
-        { "name": "AUREUS Website", "url": "https://example.com/aureus", "order": 2 },
-        { "name": "Ticketing System", "url": "https://example.com/aureus/tickets", "order": 1 },
-        { "name": "Employer Page", "url": "https://example.com/aureus/employer", "order": 3 }
-      ]
+      "url": "https://altusretreats.monday.com/boards/18423728460/pulses/12626865535"
     }
   ]
 }
