@@ -41,7 +41,9 @@
         Used to save changes back to your repo. Create a <strong>fine-grained personal access token</strong>
         scoped to just this one repo, with <strong>Contents: Read and write</strong> permission — nothing
         broader. The token is stored only in this browser's local storage and is sent only to
-        <code>api.github.com</code>.
+        <code>api.github.com</code>. Note: "clear browsing data" in most browsers wipes local storage along with
+        the cache, which erases these settings — a plain hard refresh (<code>Ctrl+Shift+R</code>) does not. Consider
+        saving the token itself somewhere durable (like a password manager) so you're not stuck regenerating it.
       </p>
       <form id="settingsForm" class="admin-form">
         <label>Owner
@@ -80,6 +82,9 @@
 
         <div class="admin-save-bar">
           <button type="button" id="saveBoardBtn" class="btn-primary">Save to GitHub</button>
+          <button type="button" id="reloadBtn" class="btn-secondary" title="Re-fetch the latest version from GitHub">
+            ↻ Reload latest
+          </button>
           <span id="saveStatus" class="admin-save-status"></span>
         </div>
       </div>
@@ -147,6 +152,6 @@
     </div>
   </div>
 
-  <script src="js/admin.js?v=3"></script>
+  <script src="js/admin.js?v=4"></script>
 </body>
 </html>

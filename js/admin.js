@@ -21,6 +21,7 @@ const addCategoryColorPicker = document.getElementById("addCategoryColorPicker")
 const linkList = document.getElementById("linkList");
 const addLinkBtn = document.getElementById("addLinkBtn");
 const saveBoardBtn = document.getElementById("saveBoardBtn");
+const reloadBtn = document.getElementById("reloadBtn");
 const saveStatus = document.getElementById("saveStatus");
 
 const linkModalOverlay = document.getElementById("linkModalOverlay");
@@ -46,7 +47,10 @@ init();
 async function init() {
   wireGlobalUi();
   previewLink.href = "index.html";
+  await loadData();
+}
 
+async function loadData() {
   try {
     const { sha, json } = await ghGetFile(DATA_PATH);
     linkDataSha = sha;
@@ -57,6 +61,7 @@ async function init() {
     return;
   }
 
+  editForms.hidden = false;
   renderCategoryList();
   renderLinkList();
 }
@@ -124,7 +129,11 @@ async function ghPutFile(path, value, sha, message) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    if (res.status === 409) throw new Error("Save conflict — the file changed since it was loaded. Reload and retry.");
+    if (res.status === 409) {
+      const conflictErr = new Error("Save conflict — the file changed since it was loaded.");
+      conflictErr.status = 409;
+      throw conflictErr;
+    }
     if (res.status === 401) throw new Error("GitHub rejected the token. Check it in Settings.");
     throw new Error(err.message || `GitHub save failed (${res.status})`);
   }
@@ -199,6 +208,12 @@ function wireGlobalUi() {
 
   addLinkBtn.addEventListener("click", () => openLinkModal(null, null));
   saveBoardBtn.addEventListener("click", onSaveData);
+  reloadBtn.addEventListener("click", async () => {
+    reloadBtn.disabled = true;
+    await loadData();
+    reloadBtn.disabled = false;
+    showStatus("Reloaded the latest version from GitHub.", "ok");
+  });
 
   linkModalClose.addEventListener("click", closeLinkModal);
   linkModalOverlay.addEventListener("click", (e) => {
@@ -450,9 +465,7 @@ async function onSaveData() {
   saveStatus.textContent = "Saving…";
   saveStatus.className = "admin-save-status";
   try {
-    const { sha } = await ghGetFile(DATA_PATH);
-    const result = await ghPutFile(DATA_PATH, linkData, sha, "Update links via LaunchPad admin");
-    linkDataSha = result.content?.sha || linkDataSha;
+    await saveWithRetry();
     saveStatus.textContent = "Saved ✓";
     showStatus("Saved to GitHub.", "ok");
   } catch (e) {
@@ -460,6 +473,23 @@ async function onSaveData() {
     showStatus(e.message, "error");
   } finally {
     saveBoardBtn.disabled = false;
+  }
+}
+
+// A 409 here just means GitHub's copy moved on since we last read it (e.g. a
+// previous save actually went through even though the page didn't visibly
+// confirm it). Re-fetching the current sha and reapplying our own in-memory
+// edits resolves that automatically — no reload or cache-clear needed.
+async function saveWithRetry(attempt = 1) {
+  const { sha } = await ghGetFile(DATA_PATH);
+  try {
+    const result = await ghPutFile(DATA_PATH, linkData, sha, "Update links via LaunchPad admin");
+    linkDataSha = result.content?.sha || linkDataSha;
+  } catch (e) {
+    if (e.status === 409 && attempt < 3) {
+      return saveWithRetry(attempt + 1);
+    }
+    throw e;
   }
 }
 
