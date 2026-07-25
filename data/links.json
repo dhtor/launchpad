@@ -94,6 +94,13 @@
       "category": "docs",
       "url": "https://app.pricelabs.co/pricing",
       "color": "var(--pal-rose)"
+    },
+    {
+      "id": "turno-ms0zamsx",
+      "name": "Turno",
+      "category": "work",
+      "url": "https://app.turno.com/dashboard",
+      "color": "var(--pal-teal)"
     }
   ]
 }
