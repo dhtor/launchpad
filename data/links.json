@@ -87,6 +87,13 @@
       "category": "work",
       "url": "https://mail.google.com/mail/u/0/#inbox",
       "color": "var(--pal-rose)"
+    },
+    {
+      "id": "pricelabs-ms0z8dp5",
+      "name": "PriceLabs",
+      "category": "docs",
+      "url": "https://app.pricelabs.co/pricing",
+      "color": "var(--pal-rose)"
     }
   ]
 }
