@@ -56,19 +56,6 @@
       "category": "comms"
     },
     {
-      "id": "drive",
-      "name": "Google Drive",
-      "url": "https://drive.google.com",
-      "category": "docs",
-      "wide": true
-    },
-    {
-      "id": "notion",
-      "name": "Notion",
-      "url": "https://notion.so",
-      "category": "docs"
-    },
-    {
       "id": "grafana",
       "name": "Grafana",
       "url": "https://grafana.com",
