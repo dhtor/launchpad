@@ -69,55 +69,11 @@
       "category": "docs"
     },
     {
-      "id": "github",
-      "name": "GitHub",
-      "url": "https://github.com",
-      "category": "work"
-    },
-    {
-      "id": "jira",
-      "name": "Jira",
-      "url": "https://www.atlassian.com/software/jira",
-      "category": "work",
-      "color": "#3b82f6"
-    },
-    {
-      "id": "figma",
-      "name": "Figma",
-      "url": "https://figma.com",
-      "category": "work",
-      "color": "var(--pal-violet)"
-    },
-    {
       "id": "grafana",
       "name": "Grafana",
       "url": "https://grafana.com",
       "category": "dashboards",
       "color": "var(--pal-amber)"
-    },
-    {
-      "id": "aureus",
-      "name": "AUREUS",
-      "category": "work",
-      "icon": "A",
-      "color": "#f43f5e",
-      "links": [
-        {
-          "name": "AUREUS Website",
-          "url": "https://example.com/aureus",
-          "order": 2
-        },
-        {
-          "name": "Ticketing System",
-          "url": "https://example.com/aureus/tickets",
-          "order": 1
-        },
-        {
-          "name": "Employer Page",
-          "url": "https://example.com/aureus/employer",
-          "order": 3
-        }
-      ]
     },
     {
       "id": "monday-ms0lrd5f",
