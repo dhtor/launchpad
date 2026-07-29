@@ -7,7 +7,7 @@
     },
     {
       "id": "docs",
-      "name": "Docs & Files",
+      "name": "STR Tools",
       "color": "#22c55e"
     },
     {
@@ -56,19 +56,6 @@
       "category": "comms"
     },
     {
-      "id": "drive",
-      "name": "Google Drive",
-      "url": "https://drive.google.com",
-      "category": "docs",
-      "wide": true
-    },
-    {
-      "id": "notion",
-      "name": "Notion",
-      "url": "https://notion.so",
-      "category": "docs"
-    },
-    {
       "id": "grafana",
       "name": "Grafana",
       "url": "https://grafana.com",
@@ -80,6 +67,27 @@
       "name": "Monday",
       "category": "work",
       "url": "https://altusretreats.monday.com/boards/18423728460/pulses/12626865535"
+    },
+    {
+      "id": "altus-gmail-ms0z35g3",
+      "name": "Altus Gmail",
+      "category": "work",
+      "url": "https://mail.google.com/mail/u/0/#inbox",
+      "color": "var(--pal-rose)"
+    },
+    {
+      "id": "pricelabs-ms0z8dp5",
+      "name": "PriceLabs",
+      "category": "docs",
+      "url": "https://app.pricelabs.co/pricing",
+      "color": "var(--pal-rose)"
+    },
+    {
+      "id": "turno-ms0zamsx",
+      "name": "Turno",
+      "category": "docs",
+      "url": "https://app.turno.com/dashboard",
+      "color": "var(--pal-teal)"
     }
   ]
 }
